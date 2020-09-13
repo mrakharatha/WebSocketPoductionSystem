@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body onload="run()">
+
+    <div dir="rtl" align="center">
+        <h1> تست پرینتر و ترازو</h1>
+
+        <div id="firstmessage">در حال اتصال به سی شارپ صبور باشید !</div>
+        <div id="errorplace" style="color: red"> </div>
+        <div id="secondmessage" style="color: green"></div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div></div>
+    <p dir="rtl" align="center">
+        <button onclick=" SendprinterMessage()"> اطلاعات پرینتر </button>
+        <br>
+        <br>
+        <button onclick=" SendscalMessage()"> خواندن ترازو </button>  
+		<br>
+        <br>
+        <button onclick=" GetStatus()">وضعیت اتصال</button>
+		<br>
+        <br>
+     
+    </p>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div dir="rtl" align="center" id="scalinfo"></div>
+
+
+
+    <script>
+        function run() {
+
+           // websocket = new WebSocket("ws://localhost:8088");
+		               websocket = new WebSocket("ws://127.0.0.1:8088");
+
+            console.log(websocket);
+            //Connected to server
+            websocket.onopen = function (ev) {
+                console.log("onopen", ev);
+                document.getElementById("firstmessage").innerHTML = "";
+                document.getElementById("secondmessage").innerHTML = "اتصال با موفقیت برقرار شد";
+            }
+
+            //Connection close
+            websocket.onclose = function (ev) {
+                console.log("onclose", ev)
+            };
+
+            //Message Receved
+            websocket.onmessage = function (ev) {
+                var data = JSON.parse(ev.data);
+				console.log("onReceived", data);
+               // console.log(data)
+                document.getElementById("scalinfo").innerHTML = ev.data;
+            };
+
+            //Error
+            websocket.onerror = function (ev) {
+                //$('.loader').hide();
+                console.log("onerror", ev)
+                document.getElementById("firstmessage").innerHTML = "";
+                document.getElementById("errorplace").innerHTML = "خطا در اتصال به سی شارپ ";
+
+
+            };
+        }
+        
+
+
+        function SendprinterMessage() {
+
+            var jsonmsg = { "command": "getprinter" };
+            data = JSON.stringify(jsonmsg);
+            console.log("onSendPrinter", data);
+            websocket.send(data);
+
+        }
+        function SendscalMessage() {
+
+           var jsonmsg = {"command":"getscale","data":{"serialPortName":"COM5","serialBaudRate":9600,"ScalesInterface":"Serial"}};
+            data = JSON.stringify(jsonmsg);
+            console.log("onSendScale", data);
+           websocket.send(data);
+
+        }
+		function  GetStatus() {
+
+            var jsonmsg = { "command": "getstatus" };
+            data = JSON.stringify(jsonmsg);
+            console.log(data);
+            websocket.send(data);
+
+        }
+		
+    </script>
+
+</body>
+
+</html>
