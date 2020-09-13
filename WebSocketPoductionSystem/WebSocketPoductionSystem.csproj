@@ -76,6 +76,7 @@
     <Compile Include="ClassWebSocket\BalanceClass.cs" />
     <Compile Include="Class\Porotocol.cs" />
     <Compile Include="Class\Scales.cs" />
+    <Compile Include="Class\Weighbridge.cs" />
     <Compile Include="Class\WriteLog.cs" />
     <Compile Include="Page\ProductionPage.cs">
       <SubType>Form</SubType>

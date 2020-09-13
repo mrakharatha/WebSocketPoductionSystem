@@ -55,29 +55,45 @@ namespace WebSocketPoductionSystem.Class
                 }
             }
         }
-        public string Received()
+        public string Received(ScalesInterface scalesInterface)
         {
             try
             {
                 string data = serialPort.ReadLine();
-                if (data.Contains("-"))
+
+
+                if (scalesInterface==ScalesInterface.Scales)
                 {
-                    string result = RemoveData(data);
-                    if (result.StartsWith("."))
+                    if (data.Contains("-"))
                     {
-                        return "-0" + result;
+                        string result = RemoveData(data);
+                        if (result.StartsWith("."))
+                        {
+                            return "-0" + result;
+                        }
+                        return "-" + result;
                     }
-                    return "-"+result;
+                    else
+                    {
+                        string result = RemoveData(data);
+                        if (result.StartsWith("."))
+                        {
+                            return "0" + result;
+                        }
+                        return result;
+                    }
                 }
-                else
+
+                if (scalesInterface == ScalesInterface.Weighbridge)
                 {
-                    string result =RemoveData(data);
-                    if (result.StartsWith("."))
-                    {
-                        return "0" + result;
-                    }
-                    return result;
+                    string[] res = data.Split('�');
+                    var result = res[res.Length - 2];
+                    string removeZero = result.TrimStart(new char[] { '0' });
+                    return removeZero;
                 }
+
+                return "0";
+
             }
             catch
             {
@@ -101,6 +117,8 @@ namespace WebSocketPoductionSystem.Class
     {
         Wifi = 1,
         Ethernet,
-        Serial
+        Serial,
+        Weighbridge,
+        Scales
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -20,22 +21,32 @@ namespace WebSocketPoductionSystem
     public partial class ProductionScales : Form
     {
         private WebSocketServer WebServer;
+        private bool _weighbridge = false;
         public ProductionScales()
         {
             InitializeComponent();
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.Hide();
-            ShowInTaskbar = false;
-            WebServer = new WebSocketServer();
-            int port = 8088;
-            WebServer.Setup(port);
-            WebServer.NewSessionConnected += WebServer_NewSessionConnected;
-            WebServer.SessionClosed += WebServer_SessionClosed;
-            WebServer.NewMessageReceived += WebServer_NewMessageReceived;
-            WebServer.Start();
-            notifyIcon.Visible = true;
+           string path = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + @"\Weighbridge.txt";
+            if (File.Exists(path))
+            {
+                _weighbridge = true;
+                StreamReader reader=new StreamReader(path);
+                BalanceClass balanceClass = JsonConvert.DeserializeObject<BalanceClass>(reader.ReadLine());
+                Weighbridge.scalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
+                Weighbridge.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate));
+            }
+            //this.Hide();
+            //ShowInTaskbar = false;
+            //WebServer = new WebSocketServer();
+            //int port = 8088;
+            //WebServer.Setup(port);
+            //WebServer.NewSessionConnected += WebServer_NewSessionConnected;
+            //WebServer.SessionClosed += WebServer_SessionClosed;
+            //WebServer.NewMessageReceived += WebServer_NewMessageReceived;
+            //WebServer.Start();
+            //notifyIcon.Visible = true;
         }
         private void WebServer_NewSessionConnected(WebSocketSession session)
         {
@@ -57,42 +68,55 @@ namespace WebSocketPoductionSystem
         }
         private void WebServer_NewMessageReceived(WebSocketSession session, string value)
         {
-            dynamic Res = JsonConvert.DeserializeObject(value);
-            string Command = Res.command.ToString();
-            if (Command== "getscale")
+
+            if (_weighbridge)
             {
-                Scales scale = new Scales();
-                WriteLog.Write(value.ToString());
-                BalanceClass balanceClass = JsonConvert.DeserializeObject<BalanceClass>(value);
-                try
+                string result = Weighbridge.readData;
+                session.Send(result);
+                WriteLog.Write(result);
+                MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
+               this.Invoke(inv);
+            }
+            else
+            {
+                dynamic Res = JsonConvert.DeserializeObject(value);
+                string Command = Res.command.ToString();
+                if (Command == "getscale")
                 {
-                    if (balanceClass.data.port != null && balanceClass.data.transfer_rate != null && balanceClass.data.gateway != null)
+                    Scales scale = new Scales();
+                    WriteLog.Write(value.ToString());
+                    BalanceClass balanceClass = JsonConvert.DeserializeObject<BalanceClass>(value);
+                    try
                     {
-                        scale.scalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
-                        if (scale.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate)))
+                        if (balanceClass.data.port != null && balanceClass.data.transfer_rate != null && balanceClass.data.gateway != null)
                         {
-                            var result = scale.Received();
-                            session.Send(result);
-                            MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
-                            this.Invoke(inv);
-                            WriteLog.Write(result);
-                            scale.DisConnect();
+                            scale.scalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
+                            if (scale.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate)))
+                            {
+                                var result = scale.Received((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol.ToString()));
+                                session.Send(result);
+                                MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
+                                this.Invoke(inv);
+                                WriteLog.Write(result);
+                                scale.DisConnect();
+                            }
+                            else
+                            {
+                                session.Send("0");
+                            }
                         }
                         else
                         {
                             session.Send("0");
                         }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        session.Send("0");
+                        scale.DisConnect();
                     }
                 }
-                catch (Exception e)
-                {
-                    scale.DisConnect();
-                }
             }
+           
         }
         private void button1_Click(object sender, EventArgs e)
         {
