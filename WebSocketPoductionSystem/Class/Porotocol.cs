@@ -6,20 +6,21 @@ using System.Threading.Tasks;
 
 namespace WebSocketPoductionSystem.Class
 {
-   public  class Porotocol
+    public class Porotocol
     {
-        
-            public string command { get; set; }
-            public string[] data { get; set; }
-
-        
+        //دستورات
+        public string command { get; set; }
+        //اطلاعات
+        public string[] data { get; set; }
     }
 
     public class PorotocolScale
     {
+        //نام پورت سریال
         public string serialPortName { get; set; }
-        public  int serialBaudRate { get; set; }
-
+        //سریال Baud Rate
+        public int serialBaudRate { get; set; }
+        //نوع ترازو
         public ScalesInterface ScalesInterface { get; set; }
     }
 }

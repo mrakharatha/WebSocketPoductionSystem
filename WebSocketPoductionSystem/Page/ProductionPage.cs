@@ -1,16 +1,8 @@
 ﻿using SuperWebSocket;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using WebSocketPoductionSystem.Class;
@@ -20,7 +12,7 @@ namespace WebSocketPoductionSystem
 {
     public partial class ProductionScales : Form
     {
-        private WebSocketServer WebServer;
+        private WebSocketServer _webServer;
         private bool _weighbridge = false;
         public ProductionScales()
         {
@@ -28,28 +20,37 @@ namespace WebSocketPoductionSystem
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-           string path = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + @"\Weighbridge.txt";
+            //اطلاعات باسکول
+           string path = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName) + @"\Weighbridge.txt";
+
             if (File.Exists(path))
             {
+                //وضعیت نرم افزار ترازو به باسکول
                 _weighbridge = true;
                 StreamReader reader=new StreamReader(path);
                 BalanceClass balanceClass = JsonConvert.DeserializeObject<BalanceClass>(reader.ReadLine());
-                Weighbridge.scalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
+
+                Weighbridge.ScalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
+             
+                //متصل به ترازو
                 Weighbridge.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate));
             }
-            //this.Hide();
-            //ShowInTaskbar = false;
-            //WebServer = new WebSocketServer();
-            //int port = 8088;
-            //WebServer.Setup(port);
-            //WebServer.NewSessionConnected += WebServer_NewSessionConnected;
-            //WebServer.SessionClosed += WebServer_SessionClosed;
-            //WebServer.NewMessageReceived += WebServer_NewMessageReceived;
-            //WebServer.Start();
-            //notifyIcon.Visible = true;
+            this.Hide();
+            ShowInTaskbar = false;
+
+            //تنظیمات وب سوکت
+            _webServer = new WebSocketServer();
+            int port = 8088;
+            _webServer.Setup(port);
+            _webServer.NewSessionConnected += WebServer_NewSessionConnected;
+            _webServer.SessionClosed += WebServer_SessionClosed;
+            _webServer.NewMessageReceived += WebServer_NewMessageReceived;
+            _webServer.Start();
+            notifyIcon.Visible = true;
         }
         private void WebServer_NewSessionConnected(WebSocketSession session)
         {
+            //متصل به وب سوکت
             MethodInvoker inv = delegate
             {
                 lblStatus.Text = "SessionConnected";
@@ -59,6 +60,7 @@ namespace WebSocketPoductionSystem
         }
         private void WebServer_SessionClosed(WebSocketSession session, SuperSocket.SocketBase.CloseReason value)
         {
+            //بستن وب سوکت
             MethodInvoker inv = delegate
             {
                 lblStatus.Text = "SessionClosed";
@@ -68,19 +70,33 @@ namespace WebSocketPoductionSystem
         }
         private void WebServer_NewMessageReceived(WebSocketSession session, string value)
         {
-
+            //حالت باسکول
             if (_weighbridge)
             {
-                string result = Weighbridge.readData;
-                session.Send(result);
-                WriteLog.Write(result);
-                MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
-               this.Invoke(inv);
+                //خواندن اطلاعات
+                string result = Weighbridge.ReadData;
+                if (result==null)
+                {
+                    session.Send("0");
+                    WriteLog.Write(result);
+                    MethodInvoker inv = delegate { listScales.Items.Add($"وزن: 0       {ConvertDate()} "); };
+                    this.Invoke(inv);
+                }
+                else
+                {
+                    session.Send(result);
+                    WriteLog.Write(result);
+                    MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
+                    this.Invoke(inv);
+                }
+           
             }
             else
             {
-                dynamic Res = JsonConvert.DeserializeObject(value);
-                string Command = Res.command.ToString();
+                dynamic res = JsonConvert.DeserializeObject(value);
+                //دستور سیستم
+                string Command = res.command.ToString();
+                //دریافت وزن ترازو
                 if (Command == "getscale")
                 {
                     Scales scale = new Scales();
@@ -88,9 +104,10 @@ namespace WebSocketPoductionSystem
                     BalanceClass balanceClass = JsonConvert.DeserializeObject<BalanceClass>(value);
                     try
                     {
+                        //دریافت اطلاعات ترازو
                         if (balanceClass.data.port != null && balanceClass.data.transfer_rate != null && balanceClass.data.gateway != null)
                         {
-                            scale.scalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
+                            scale.ScalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
                             if (scale.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate)))
                             {
                                 var result = scale.Received((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol.ToString()));

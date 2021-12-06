@@ -10,6 +10,7 @@ namespace WebSocketPoductionSystem.Class
 {
    public static class WriteLog
     {
+        // ثبت لاگ پیامک
         public static void Write(string log)
         {
             try
@@ -24,10 +25,8 @@ namespace WebSocketPoductionSystem.Class
             }
             catch (Exception ex)
             {
-
+                // ignored
             }
-
-
         }
     }
 }

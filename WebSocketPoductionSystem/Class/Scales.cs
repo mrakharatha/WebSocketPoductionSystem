@@ -4,25 +4,28 @@ using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WebSocketPoductionSystem.Class
 {
     public class Scales
     {
-        public ScalesInterface scalesInterface;
-        public SerialPort serialPort;
+        public ScalesInterface ScalesInterface;
+        public SerialPort SerialPort;
+        //متصل به ترازو
         public bool Connect(string serialPortName, int serialBaudRate)
         {
-            if (scalesInterface == ScalesInterface.Serial)
+            // از نوع سریال
+            if (ScalesInterface == ScalesInterface.Serial)
             {
                 DisConnect();
                 try
                 {
-                    if (serialPort == null || serialPort.IsOpen == false)
+                    if (SerialPort == null || SerialPort.IsOpen == false)
                     {
-                        serialPort = new SerialPort(serialPortName, serialBaudRate);
-                        serialPort.Open();
+                        SerialPort = new SerialPort(serialPortName, serialBaudRate);
+                        SerialPort.Open();
                         return true;
                     }
                 }
@@ -38,14 +41,15 @@ namespace WebSocketPoductionSystem.Class
         }
         public void DisConnect()
         {
-            if (scalesInterface == ScalesInterface.Serial && serialPort != null)
+            //از نوع سریال
+            if (ScalesInterface == ScalesInterface.Serial && SerialPort != null)
             {
                 try
                 {
-                    serialPort.RtsEnable = false;
-                    serialPort.DtrEnable = false;
-                    serialPort.ReadExisting();
-                    serialPort.Close();
+                    SerialPort.RtsEnable = false;
+                    SerialPort.DtrEnable = false;
+                    SerialPort.ReadExisting();
+                    SerialPort.Close();
                 }
                 catch (Exception ex)
                 {
@@ -59,13 +63,17 @@ namespace WebSocketPoductionSystem.Class
         {
             try
             {
-                string data = serialPort.ReadLine();
 
-
+                //از نوع ترازو
                 if (scalesInterface==ScalesInterface.Scales)
                 {
+                    // خواندن اطلاعات
+                    string data = SerialPort.ReadLine();
+
+                    //منفی بودن مقدار ترازو
                     if (data.Contains("-"))
                     {
+                        //حذف دیتای اضافی
                         string result = RemoveData(data);
                         if (result.StartsWith("."))
                         {
@@ -75,6 +83,7 @@ namespace WebSocketPoductionSystem.Class
                     }
                     else
                     {
+                        //حذف دیتای اضافی
                         string result = RemoveData(data);
                         if (result.StartsWith("."))
                         {
@@ -84,12 +93,23 @@ namespace WebSocketPoductionSystem.Class
                     }
                 }
 
+                //ازنوع باسکول
                 if (scalesInterface == ScalesInterface.Weighbridge)
                 {
-                    string[] res = data.Split('�');
-                    var result = res[res.Length - 2];
+                    //تاخیر 1 ثانیه ای
+                    Thread.Sleep(1000);
+                    // خواندن اطلاعات
+                    var data = SerialPort.ReadExisting();
+                    //شکاف بر اساس ؟
+                    string[] res = data.Split('?');
+                    var result = res.Last();
                     string removeZero = result.TrimStart(new char[] { '0' });
-                    return removeZero;
+                    if (removeZero=="")
+                        return "0";
+                    
+                    else
+                        return removeZero;
+                    
                 }
 
                 return "0";
@@ -102,6 +122,7 @@ namespace WebSocketPoductionSystem.Class
         }
         public string RemoveData(string data)
         {
+            //حذف دیتای اضافی
             if (data.Contains("-"))
             {
                 data = data.Replace('-', '0');

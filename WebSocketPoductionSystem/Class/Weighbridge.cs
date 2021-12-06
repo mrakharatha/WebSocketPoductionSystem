@@ -8,23 +8,26 @@ using System.Threading.Tasks;
 
 namespace WebSocketPoductionSystem.Class
 {
-  static  class Weighbridge
+  public  class Weighbridge
     {
-        public static ScalesInterface scalesInterface;
-        private static SerialPort serialPort;
-        public static string readData;
+        public static ScalesInterface ScalesInterface;
+        private static SerialPort _serialPort;
+        public static string ReadData;
+
+        //متصل به ترازو
         public static void Connect(string serialPortName, int serialBaudRate)
         {
-            if (scalesInterface == ScalesInterface.Serial)
+            // از نوع سریال
+            if (ScalesInterface == ScalesInterface.Serial)
             {
                 DisConnect();
                 try
                 {
-                    if (serialPort == null || serialPort.IsOpen == false)
+                    if (_serialPort == null || _serialPort.IsOpen == false)
                     {
-                        serialPort = new SerialPort(serialPortName, serialBaudRate);
-                        serialPort.Open();
-                        serialPort.DataReceived += SerialPort_DataReceived;
+                        _serialPort = new SerialPort(serialPortName, serialBaudRate);
+                        _serialPort.Open();
+                        _serialPort.DataReceived += SerialPort_DataReceived;
                     }
                 }
                 catch (Exception ex)
@@ -36,21 +39,26 @@ namespace WebSocketPoductionSystem.Class
             }
         }
 
+        //دریافت اطلاعات
         private static void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            readData = serialPort.ReadLine();
+            ReadData = _serialPort.ReadLine();
+            string[] res = ReadData.Split(' ');
+            res = res.Last().Split('\r');
+            ReadData = res.First();
         }
 
         public static void DisConnect()
         {
-            if (scalesInterface == ScalesInterface.Serial && serialPort != null)
+            //قطع شدن
+            if (ScalesInterface == ScalesInterface.Serial && _serialPort != null)
             {
                 try
                 {
-                    serialPort.RtsEnable = false;
-                    serialPort.DtrEnable = false;
-                    serialPort.ReadExisting();
-                    serialPort.Close();
+                    _serialPort.RtsEnable = false;
+                    _serialPort.DtrEnable = false;
+                    _serialPort.ReadExisting();
+                    _serialPort.Close();
                 }
                 catch (Exception ex)
                 {
