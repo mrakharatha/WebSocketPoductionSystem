@@ -25,7 +25,13 @@ namespace WebSocketPoductionSystem.Class
             }
             catch (Exception ex)
             {
-                // ignored
+                StreamWriter sw = null;
+                DateTime date = DateTime.Now;
+                PersianCalendar persian = new PersianCalendar();
+                sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + @"//log//log.txt", true);
+                sw.WriteLine(persian.GetYear(date) + "/" + persian.GetMonth(date).ToString("00") + "/" + persian.GetDayOfMonth(date).ToString("00") + "  " + DateTime.Now.ToString("HH:mm:ss") + "  Log:" + ex.Message.ToString());
+                sw.Flush();
+                sw.Close();
             }
         }
     }

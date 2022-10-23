@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -70,6 +71,7 @@ namespace WebSocketPoductionSystem.Class
                     // خواندن اطلاعات
                     string data = SerialPort.ReadLine();
 
+                    
                     //منفی بودن مقدار ترازو
                     if (data.Contains("-"))
                     {
@@ -122,12 +124,14 @@ namespace WebSocketPoductionSystem.Class
         }
         public string RemoveData(string data)
         {
-            //حذف دیتای اضافی
+            data = data.Replace('(','k');
+            //حذف دیتای اضافی 
             if (data.Contains("-"))
             {
                 data = data.Replace('-', '0');
             }
-            string removeW = data.Replace('w', '0');
+            string removeEqual = data.Replace('=', '0');
+            string removeW = removeEqual.Replace('w', '0');
             string removeN = removeW.Replace('n', '0');
             string removeZero = removeN.TrimStart(new char[] { '0' });
             var send = removeZero.Split('k');

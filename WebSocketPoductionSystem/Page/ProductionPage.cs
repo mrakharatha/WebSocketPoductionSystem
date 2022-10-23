@@ -12,7 +12,7 @@ namespace WebSocketPoductionSystem
 {
     public partial class ProductionScales : Form
     {
-        private WebSocketServer _webServer;
+       private WebSocketServer _webServer;
         private bool _weighbridge = false;
         public ProductionScales()
         {
@@ -35,6 +35,10 @@ namespace WebSocketPoductionSystem
                 //متصل به ترازو
                 Weighbridge.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate));
             }
+
+            WriteLog.Write(_weighbridge?"باسکول":"ترازو");
+
+
             this.Hide();
             ShowInTaskbar = false;
 
@@ -70,6 +74,9 @@ namespace WebSocketPoductionSystem
         }
         private void WebServer_NewMessageReceived(WebSocketSession session, string value)
         {
+
+            WriteLog.Write("Step 1");
+
             //حالت باسکول
             if (_weighbridge)
             {
@@ -93,24 +100,38 @@ namespace WebSocketPoductionSystem
             }
             else
             {
+                WriteLog.Write("Step 2");
                 dynamic res = JsonConvert.DeserializeObject(value);
                 //دستور سیستم
                 string Command = res.command.ToString();
                 //دریافت وزن ترازو
                 if (Command == "getscale")
                 {
+                    WriteLog.Write("Step 3");
+
                     Scales scale = new Scales();
                     WriteLog.Write(value.ToString());
                     BalanceClass balanceClass = JsonConvert.DeserializeObject<BalanceClass>(value);
+
+                    WriteLog.Write("balance" + balanceClass.data.port);
+
+
                     try
                     {
+                        WriteLog.Write("Step 4");
+
                         //دریافت اطلاعات ترازو
                         if (balanceClass.data.port != null && balanceClass.data.transfer_rate != null && balanceClass.data.gateway != null)
                         {
+                            WriteLog.Write("Step 5");
+
                             scale.ScalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
                             if (scale.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate)))
                             {
+                                WriteLog.Write("Step 6");
+
                                 var result = scale.Received((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol.ToString()));
+
                                 session.Send(result);
                                 MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
                                 this.Invoke(inv);
@@ -129,6 +150,8 @@ namespace WebSocketPoductionSystem
                     }
                     catch (Exception e)
                     {
+                        WriteLog.Write("Step Error"+ e.Message);
+
                         scale.DisConnect();
                     }
                 }
