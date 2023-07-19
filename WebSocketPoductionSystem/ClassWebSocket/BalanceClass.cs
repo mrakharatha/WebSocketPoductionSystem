@@ -16,6 +16,7 @@ namespace WebSocketPoductionSystem.ClassWebSocket
 
     public class data
     {
+        //45455
         //آیدی
         public int id { get; set; }
         //عنوان
