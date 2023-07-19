@@ -66,12 +66,12 @@ namespace WebSocketPoductionSystem.Class
             {
 
                 //از نوع ترازو
-                if (scalesInterface==ScalesInterface.Scales)
+                if (scalesInterface == ScalesInterface.Scales)
                 {
                     // خواندن اطلاعات
                     string data = SerialPort.ReadLine();
 
-                    
+
                     //منفی بودن مقدار ترازو
                     if (data.Contains("-"))
                     {
@@ -103,16 +103,73 @@ namespace WebSocketPoductionSystem.Class
                     // خواندن اطلاعات
                     var data = SerialPort.ReadExisting();
                     //شکاف بر اساس ؟
-                    string[] res = data.Split('?');
-                    var result = res.Last();
+                    string[] res = data.Split('$');
+                    var result = res.FirstOrDefault() ?? "0";
+
+                    result = result.Split('?').FirstOrDefault() ?? "0";
+
+                    var response = result.Split('\r');
+
+                    result = response.FirstOrDefault() ?? "0";
+
+                    var r = result.Split('\0');
+
+                    result = r.FirstOrDefault() ?? "0";
+
+                    result = result.Replace(" ", "");
+
                     string removeZero = result.TrimStart(new char[] { '0' });
-                    if (removeZero=="")
+
+                    if (removeZero == "")
                         return "0";
-                    
+
                     else
                         return removeZero;
-                    
+
                 }
+
+
+                if (scalesInterface == ScalesInterface.Zarbaf)
+                {
+
+                    while (true)
+                    {
+                        string[] stringSeparators = new string[] { "\r" };
+                        Thread.Sleep(100);
+                        string[] lines = SerialPort.ReadExisting().Split(stringSeparators, StringSplitOptions.None);
+
+
+
+                        foreach (var line in lines)
+                        {
+                            var result = line.Replace("p", "");
+                            result = result.Replace("P", "");
+                            result = result.Replace("@", "");
+                            if (result.StartsWith("+"))
+                            {
+                                result = result.Replace("+", "");
+                                result = result.TrimStart(new char[] { '0' });
+                                if (result.StartsWith("."))
+                                    return "0" + result;
+
+                                return result;
+                            }
+
+                            if (result.StartsWith("-"))
+                            {
+                                result = result.Replace("-", "");
+                                result = result.TrimStart(new char[] { '0' });
+                                if (result.StartsWith("."))
+                                    return "0" + result;
+
+                                return "-" + result;
+                            }
+                        }
+                    }
+
+
+                }
+
 
                 return "0";
 
@@ -124,8 +181,8 @@ namespace WebSocketPoductionSystem.Class
         }
         public string RemoveData(string data)
         {
-            data = data.Replace('(','k');
-            //حذف دیتای اضافی 
+            data = data.Replace('(', 'k');
+            //حذف دیتای اضافی
             if (data.Contains("-"))
             {
                 data = data.Replace('-', '0');
@@ -144,6 +201,7 @@ namespace WebSocketPoductionSystem.Class
         Ethernet,
         Serial,
         Weighbridge,
-        Scales
+        Scales,
+        Zarbaf
     }
 }

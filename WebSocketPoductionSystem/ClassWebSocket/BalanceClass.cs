@@ -11,12 +11,11 @@ namespace WebSocketPoductionSystem.ClassWebSocket
         //دستور
         public string command { get; set; }
         //اطلاعات
-        public  data data { get; set; }
+        public data data { get; set; }
     }
 
     public class data
     {
-        //45455
         //آیدی
         public int id { get; set; }
         //عنوان
@@ -34,7 +33,7 @@ namespace WebSocketPoductionSystem.ClassWebSocket
         //نرخ انتقال
         public string transfer_rate { get; set; }
         //فعال
-        public int active { get; set; }
+        public bool active { get; set; }
         //تاریخ ثبت
         public string created_at { get; set; }
         //تاریخ ویرایش

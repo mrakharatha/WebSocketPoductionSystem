@@ -4,11 +4,12 @@ using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WebSocketPoductionSystem.Class
 {
-  public  class Weighbridge
+    public class Weighbridge
     {
         public static ScalesInterface ScalesInterface;
         private static SerialPort _serialPort;
@@ -42,7 +43,8 @@ namespace WebSocketPoductionSystem.Class
         //دریافت اطلاعات
         private static void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            ReadData = _serialPort.ReadLine();
+            Thread.Sleep(500);
+            ReadData = _serialPort.ReadExisting();
             string[] res = ReadData.Split(' ');
             res = res.Last().Split('\r');
             ReadData = res.First();

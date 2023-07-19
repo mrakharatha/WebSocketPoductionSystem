@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using WebSocketPoductionSystem.Class;
@@ -12,7 +13,7 @@ namespace WebSocketPoductionSystem
 {
     public partial class ProductionScales : Form
     {
-       private WebSocketServer _webServer;
+        private WebSocketServer _webServer;
         private bool _weighbridge = false;
         public ProductionScales()
         {
@@ -21,22 +22,22 @@ namespace WebSocketPoductionSystem
         private void Form1_Load(object sender, EventArgs e)
         {
             //اطلاعات باسکول
-           string path = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName) + @"\Weighbridge.txt";
+            string path = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName) + @"\Weighbridge.txt";
 
             if (File.Exists(path))
             {
                 //وضعیت نرم افزار ترازو به باسکول
                 _weighbridge = true;
-                StreamReader reader=new StreamReader(path);
+                StreamReader reader = new StreamReader(path);
                 BalanceClass balanceClass = JsonConvert.DeserializeObject<BalanceClass>(reader.ReadLine());
 
                 Weighbridge.ScalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
-             
+
                 //متصل به ترازو
                 Weighbridge.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate));
             }
 
-            WriteLog.Write(_weighbridge?"باسکول":"ترازو");
+            WriteLog.Write(_weighbridge ? "باسکول" : "ترازو");
 
 
             this.Hide();
@@ -74,89 +75,90 @@ namespace WebSocketPoductionSystem
         }
         private void WebServer_NewMessageReceived(WebSocketSession session, string value)
         {
+            dynamic res = JsonConvert.DeserializeObject(value);
+            string command = res.command.ToString();
+            string protocol = res.data.protocol.ToString();
 
-            WriteLog.Write("Step 1");
+            ////حالت باسکول
+            //if (protocol== "Weighbridge")
+            //{
+            //    //خواندن اطلاعات
+            //    string result = Weighbridge.ReadData;
 
-            //حالت باسکول
-            if (_weighbridge)
+            //    if (result==null)
+            //    {
+            //        session.Send("0");
+            //        WriteLog.Write(result);
+            //        MethodInvoker inv = delegate { listScales.Items.Add($"وزن: 0       {ConvertDate()} "); };
+            //        this.Invoke(inv);
+            //    }
+            //    else
+            //    {
+            //        session.Send(result);
+            //        WriteLog.Write(result);
+            //        MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
+            //        this.Invoke(inv);
+            //    }
+
+            //}
+            //else
+            //{
+            // dynamic res = JsonConvert.DeserializeObject(value);
+            //دستور سیستم
+            //string Command = res.command.ToString();
+            //دریافت وزن ترازو
+            if (command == "getscale")
             {
-                //خواندن اطلاعات
-                string result = Weighbridge.ReadData;
-                if (result==null)
+                WriteLog.Write("Step 3");
+
+                Scales scale = new Scales();
+                WriteLog.Write(value.ToString());
+                BalanceClass balanceClass = JsonConvert.DeserializeObject<BalanceClass>(value);
+
+                WriteLog.Write("balance" + balanceClass.data.port);
+
+
+                try
                 {
-                    session.Send("0");
-                    WriteLog.Write(result);
-                    MethodInvoker inv = delegate { listScales.Items.Add($"وزن: 0       {ConvertDate()} "); };
-                    this.Invoke(inv);
-                }
-                else
-                {
-                    session.Send(result);
-                    WriteLog.Write(result);
-                    MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
-                    this.Invoke(inv);
-                }
-           
-            }
-            else
-            {
-                WriteLog.Write("Step 2");
-                dynamic res = JsonConvert.DeserializeObject(value);
-                //دستور سیستم
-                string Command = res.command.ToString();
-                //دریافت وزن ترازو
-                if (Command == "getscale")
-                {
-                    WriteLog.Write("Step 3");
+                    WriteLog.Write("Step 4");
 
-                    Scales scale = new Scales();
-                    WriteLog.Write(value.ToString());
-                    BalanceClass balanceClass = JsonConvert.DeserializeObject<BalanceClass>(value);
-
-                    WriteLog.Write("balance" + balanceClass.data.port);
-
-
-                    try
+                    //دریافت اطلاعات ترازو
+                    if (balanceClass.data.port != null && balanceClass.data.transfer_rate != null && balanceClass.data.gateway != null)
                     {
-                        WriteLog.Write("Step 4");
+                        WriteLog.Write("Step 5");
 
-                        //دریافت اطلاعات ترازو
-                        if (balanceClass.data.port != null && balanceClass.data.transfer_rate != null && balanceClass.data.gateway != null)
+                        scale.ScalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
+                        if (scale.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate)))
                         {
-                            WriteLog.Write("Step 5");
+                            WriteLog.Write("Step 6");
 
-                            scale.ScalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
-                            if (scale.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate)))
-                            {
-                                WriteLog.Write("Step 6");
+                            var result = scale.Received((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol.ToString()));
 
-                                var result = scale.Received((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol.ToString()));
-
-                                session.Send(result);
-                                MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
-                                this.Invoke(inv);
-                                WriteLog.Write(result);
-                                scale.DisConnect();
-                            }
-                            else
-                            {
-                                session.Send("0");
-                            }
+                            session.Send(result);
+                            MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
+                            this.Invoke(inv);
+                            WriteLog.Write(result);
+                            scale.DisConnect();
                         }
                         else
                         {
                             session.Send("0");
                         }
                     }
-                    catch (Exception e)
+                    else
                     {
-                        WriteLog.Write("Step Error"+ e.Message);
-
-                        scale.DisConnect();
+                        session.Send("0");
                     }
                 }
+                catch (Exception e)
+                {
+                    WriteLog.Write("Step Error" + e.Message);
+
+                    scale.DisConnect();
+                }
             }
-           
+            //}
+
         }
         private void button1_Click(object sender, EventArgs e)
         {
