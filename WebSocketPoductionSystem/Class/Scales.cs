@@ -68,31 +68,108 @@ namespace WebSocketPoductionSystem.Class
                 //از نوع ترازو
                 if (scalesInterface == ScalesInterface.Scales)
                 {
-                    // خواندن اطلاعات
-                    string data = SerialPort.ReadLine();
+                    //// خواندن اطلاعات
+                    //string data = SerialPort.ReadLine();
 
 
-                    //منفی بودن مقدار ترازو
-                    if (data.Contains("-"))
+                    ////منفی بودن مقدار ترازو
+                    //if (data.Contains("-"))
+                    //{
+                    //    //حذف دیتای اضافی
+                    //    string result = RemoveData(data);
+                    //    if (result.StartsWith("."))
+                    //    {
+                    //        return "-0" + result;
+                    //    }
+                    //    return "-" + result;
+                    //}
+                    //else
+                    //{
+                    //    //حذف دیتای اضافی
+                    //    string result = RemoveData(data);
+                    //    if (result.StartsWith("."))
+                    //    {
+                    //        return "0" + result;
+                    //    }
+                    //    return result;
+                    //}
+
+
+
+                    while (true)
                     {
-                        //حذف دیتای اضافی
-                        string result = RemoveData(data);
-                        if (result.StartsWith("."))
+                        string[] stringSeparators = new string[] { "\r" };
+                        Thread.Sleep(100);
+                        string[] lines = SerialPort.ReadExisting().Split(stringSeparators, StringSplitOptions.None);
+
+                        var positiveState = "=";
+                        var negativeState = "-=";
+                        var end = "(kg)";
+
+                        foreach (var line in lines)
                         {
-                            return "-0" + result;
+
+                            if (line.StartsWith(positiveState))
+                            {
+                                if (line.EndsWith(end))
+                                {
+                                    string result = RemoveData(line);
+                                    if (result.StartsWith("."))
+                                    {
+                                        return "0" + result;
+                                    }
+                                    return result;
+                                }
+                            }
+
+                            if (line.StartsWith(negativeState))
+                            {
+                                if (line.EndsWith(end))
+                                {
+
+                                    //حذف دیتای اضافی
+                                    string result = RemoveData(line);
+                                    if (result.StartsWith("."))
+                                    {
+                                        return "-0" + result;
+                                    }
+                                    return "-" + result;
+                                }
+                            }
+
+
+                            //var result = line.Replace("p", "");
+                            //result = result.Replace("P", "");
+                            //result = result.Replace("@", "");
+                            //if (result.StartsWith("+"))
+                            //{
+                            //    result = result.Replace("+", "");
+                            //    result = result.TrimStart(new char[] { '0' });
+                            //    if (result.StartsWith("."))
+                            //        return "0" + result;
+
+                            //    return result;
+                            //}
+
+                            //if (result.StartsWith("-"))
+                            //{
+                            //    result = result.Replace("-", "");
+                            //    result = result.TrimStart(new char[] { '0' });
+                            //    if (result.StartsWith("."))
+                            //        return "0" + result;
+
+                            //    return "-" + result;
+                            //}
                         }
-                        return "-" + result;
                     }
-                    else
-                    {
-                        //حذف دیتای اضافی
-                        string result = RemoveData(data);
-                        if (result.StartsWith("."))
-                        {
-                            return "0" + result;
-                        }
-                        return result;
-                    }
+
+
+
+
+
+
+
+
                 }
 
                 //ازنوع باسکول
