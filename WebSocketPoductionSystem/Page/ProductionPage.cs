@@ -109,35 +109,28 @@ namespace WebSocketPoductionSystem
             //دریافت وزن ترازو
             if (command == "getscale")
             {
-                WriteLog.Write("Step 3");
 
                 Scales scale = new Scales();
-                WriteLog.Write(value.ToString());
                 BalanceClass balanceClass = JsonConvert.DeserializeObject<BalanceClass>(value);
 
-                WriteLog.Write("balance" + balanceClass.data.port);
 
 
                 try
                 {
-                    WriteLog.Write("Step 4");
 
                     //دریافت اطلاعات ترازو
                     if (balanceClass.data.port != null && balanceClass.data.transfer_rate != null && balanceClass.data.gateway != null)
                     {
-                        WriteLog.Write("Step 5");
 
                         scale.ScalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
                         if (scale.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate)))
                         {
-                            WriteLog.Write("Step 6");
 
                             var result = scale.Received((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol.ToString()));
 
                             session.Send(result);
                             MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
                             this.Invoke(inv);
-                            WriteLog.Write(result);
                             scale.DisConnect();
                         }
                         else
