@@ -1,4 +1,4 @@
-﻿namespace WebSocketPoductionSystem
+﻿namespace WebSocketPoductionSystem.Page
 {
     partial class ProductionScales
     {

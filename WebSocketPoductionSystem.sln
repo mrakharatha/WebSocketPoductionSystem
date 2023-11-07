@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.106
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocketPoductionSystem", "WebSocketPoductionSystem\WebSocketPoductionSystem.csproj", "{0FFD6D71-7558-498A-B114-DA2FF0F7DE1A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocketProductionSystem", "WebSocketPoductionSystem\WebSocketProductionSystem.csproj", "{0FFD6D71-7558-498A-B114-DA2FF0F7DE1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

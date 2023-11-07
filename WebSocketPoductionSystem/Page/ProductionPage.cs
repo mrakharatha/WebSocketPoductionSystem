@@ -1,15 +1,14 @@
-﻿using SuperWebSocket;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Threading;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using SuperWebSocket;
 using WebSocketPoductionSystem.Class;
 using WebSocketPoductionSystem.ClassWebSocket;
 
-namespace WebSocketPoductionSystem
+namespace WebSocketPoductionSystem.Page
 {
     public partial class ProductionScales : Form
     {
