@@ -121,7 +121,6 @@ namespace WebSocketPoductionSystem.Page
                     if (balanceClass.data.port != null && balanceClass.data.transfer_rate != null && balanceClass.data.gateway != null)
                     {
 
-                        scale.ScalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway.ToString());
                         if (scale.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate)))
                         {
 

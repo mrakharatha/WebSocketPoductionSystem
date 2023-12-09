@@ -19,8 +19,7 @@ namespace WebSocketPoductionSystem.Class
         public static void Connect(string serialPortName, int serialBaudRate)
         {
             // از نوع سریال
-            if (ScalesInterface == ScalesInterface.Serial)
-            {
+           
                 DisConnect();
                 try
                 {
@@ -36,7 +35,7 @@ namespace WebSocketPoductionSystem.Class
                     StreamWriter sw = new StreamWriter("log.txt", true);
                     sw.WriteLine(ex.Message);
                     sw.Close();
-                }
+                
             }
         }
 
@@ -53,7 +52,7 @@ namespace WebSocketPoductionSystem.Class
         public static void DisConnect()
         {
             //قطع شدن
-            if (ScalesInterface == ScalesInterface.Serial && _serialPort != null)
+            if ( _serialPort != null)
             {
                 try
                 {

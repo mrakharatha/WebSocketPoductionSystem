@@ -18,32 +18,31 @@ namespace WebSocketPoductionSystem.Class
         public bool Connect(string serialPortName, int serialBaudRate)
         {
             // از نوع سریال
-            if (ScalesInterface == ScalesInterface.Serial)
+
+            DisConnect();
+            try
             {
-                DisConnect();
-                try
+                if (SerialPort == null || SerialPort.IsOpen == false)
                 {
-                    if (SerialPort == null || SerialPort.IsOpen == false)
-                    {
-                        SerialPort = new SerialPort(serialPortName, serialBaudRate);
-                        SerialPort.Open();
-                        return true;
-                    }
+                    SerialPort = new SerialPort(serialPortName, serialBaudRate);
+                    SerialPort.Open();
+                    return true;
                 }
-                catch (Exception ex)
-                {
-                    StreamWriter sw = new StreamWriter("log.txt", true);
-                    sw.WriteLine(ex.Message);
-                    sw.Close();
-                    return false;
-                }
+            }
+            catch (Exception ex)
+            {
+                StreamWriter sw = new StreamWriter("log.txt", true);
+                sw.WriteLine(ex.Message);
+                sw.Close();
+                return false;
+
             }
             return false;
         }
         public void DisConnect()
         {
             //از نوع سریال
-            if (ScalesInterface == ScalesInterface.Serial && SerialPort != null)
+            if (SerialPort != null)
             {
                 try
                 {
@@ -247,7 +246,40 @@ namespace WebSocketPoductionSystem.Class
 
                 }
 
+                if (scalesInterface == ScalesInterface.YazdTaraz)
+                {
+                    while (true)
+                    {
+                        string[] stringSeparators = new string[] { "\r\n" };
+                        Thread.Sleep(100);
+                        string[] lines = SerialPort.ReadExisting().Split(stringSeparators, StringSplitOptions.None);
 
+                        var positiveState = "US,NT,+";
+                        var negativeState = "US,NT,-";
+                        var end = "kg";
+
+                        foreach (var line in lines)
+                        {
+                            if (line.StartsWith(positiveState) && line.EndsWith(end))
+                            {
+                                var result = line.Replace(positiveState, "").Replace(end, "").Trim();
+                                DisConnect();
+
+                                return result;
+
+                            }
+                            if (line.StartsWith(negativeState) && line.EndsWith(end))
+                            {
+                                var result = line.Replace(negativeState, "").Replace(end, "").Trim();
+                                DisConnect();
+
+                                return "-" + result;
+
+                            }
+                        }
+
+                    }
+                }
                 return "0";
 
             }
@@ -274,11 +306,9 @@ namespace WebSocketPoductionSystem.Class
     }
     public enum ScalesInterface
     {
-        Wifi = 1,
-        Ethernet,
-        Serial,
         Weighbridge,
         Scales,
-        Zarbaf
+        Zarbaf,
+        YazdTaraz
     }
 }
