@@ -254,8 +254,8 @@ namespace WebSocketPoductionSystem.Class
                         Thread.Sleep(100);
                         string[] lines = SerialPort.ReadExisting().Split(stringSeparators, StringSplitOptions.None);
 
-                        var positiveState = "US,NT,+";
-                        var negativeState = "US,NT,-";
+                        var positiveState = "ST,NT,+";
+                        var negativeState = "ST,NT,-";
                         var end = "kg";
 
                         foreach (var line in lines)
