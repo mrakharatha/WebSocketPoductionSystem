@@ -32,6 +32,8 @@ namespace WebSocketPoductionSystem.ClassWebSocket
         public string port { get; set; }
         //نرخ انتقال
         public string transfer_rate { get; set; }
+
+        public int scale_number { get; set; }
         ////فعال
         //public bool active { get; set; }
         //تاریخ ثبت

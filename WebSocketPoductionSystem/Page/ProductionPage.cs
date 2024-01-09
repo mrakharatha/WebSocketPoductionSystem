@@ -114,32 +114,59 @@ namespace WebSocketPoductionSystem.Page
 
 
 
+
                 try
                 {
-
-                    //دریافت اطلاعات ترازو
-                    if (balanceClass.data.port != null && balanceClass.data.transfer_rate != null && balanceClass.data.gateway != null)
+                    if ((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.gateway) == ScalesInterface.Wifi)
                     {
 
-                        if (scale.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate)))
+                        if ((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol) == ScalesInterface.Udp)
                         {
+                            var result = scale.UcpServerReceived(balanceClass.data.ip,balanceClass.data.port,balanceClass.data.scale_number);
 
-                            var result = scale.Received((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol.ToString()));
 
                             session.Send(result);
                             MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
                             this.Invoke(inv);
-                            scale.DisConnect();
+                        }
+                        else if ((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol) == ScalesInterface.Tcp)
+                        {
+                            var result = scale.TcpServerReceived(balanceClass.data.ip, balanceClass.data.port);
+
+                            session.Send(result);
+                            MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
+                            this.Invoke(inv);
+                        }
+                    }
+                    else
+                    {
+                        //دریافت اطلاعات ترازو
+                        if (balanceClass.data.port != null && balanceClass.data.transfer_rate != null && balanceClass.data.gateway != null)
+                        {
+
+                            if (scale.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate)))
+                            {
+
+                                var result = scale.Received((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol.ToString()));
+
+                                session.Send(result);
+                                MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
+                                this.Invoke(inv);
+                                scale.DisConnect();
+                            }
+                            else
+                            {
+                                session.Send("0");
+                            }
                         }
                         else
                         {
                             session.Send("0");
                         }
                     }
-                    else
-                    {
-                        session.Send("0");
-                    }
+
+
+
                 }
                 catch (Exception e)
                 {

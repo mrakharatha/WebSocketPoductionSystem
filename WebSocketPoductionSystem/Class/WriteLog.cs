@@ -13,8 +13,7 @@ namespace WebSocketPoductionSystem.Class
 		// ثبت لاگ پیامک
 		public static void Write(string log)
 		{
-			
-			if (log == null)
+            if (log == null)
 				return;
 
 			if (!Directory.Exists("log"))

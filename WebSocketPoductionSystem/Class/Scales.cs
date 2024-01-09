@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Net.Sockets;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Windows.Forms.AxHost;
 
 namespace WebSocketPoductionSystem.Class
 {
@@ -303,9 +306,117 @@ namespace WebSocketPoductionSystem.Class
             var send = removeZero.Split('k');
             return send[0];
         }
+        public string TcpServerReceived(string ip, string port)
+        {
+            TcpListener server = null;
+            try
+            {
+                IPAddress ipAddress = IPAddress.Parse(ip);
+
+                server = new TcpListener(ipAddress,int.Parse( port));
+                server.Start();
+
+                Byte[] bytes = new Byte[256];
+
+                while (true)
+                {
+                    using (TcpClient client = server.AcceptTcpClient())
+                    {
+                        NetworkStream stream = client.GetStream();
+
+                        int i;
+                        while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+                        {
+                            var data = System.Text.Encoding.ASCII.GetString(bytes, 0, i).Trim();
+                            server.Stop();
+                            if (!data.EndsWith("-") && !data.EndsWith("_"))
+                                return data;
+
+                            data = data.Replace("-", "");
+                            data = data.Replace("_", "");
+                            data = "-" + data;
+
+                            return data;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                server?.Stop();
+                return "0";
+            }
+        }
+
+
+        public string UcpServerReceived(string ip, string port, int scaleNumber)
+        {
+            var udpServer = new System.Net.Sockets.UdpClient(int.Parse(port));
+            var clientEndPoint = new IPEndPoint(IPAddress.Parse(ip), int.Parse(port));
+
+            try
+            {
+
+                while (true)
+                {
+                    // دریافت داده از کلاینت
+                    var data = udpServer.Receive(ref clientEndPoint);
+                    var result = Encoding.UTF8.GetString(data);
+
+                    result = result.Replace("Scale,", "");
+                    result = result.Replace("kg", "");
+                    result = result.Replace("\r\n", "");
+
+                    var split = result.Split(':');
+
+                    if (split.Length > 1&& int.Parse(split[0]) == scaleNumber)
+                    {
+                        var getScale = split[1];
+
+                        if (getScale.StartsWith("-"))
+                        {
+
+                            getScale = getScale.Replace("-", "");
+
+                            getScale = getScale.TrimStart(new char[] { '0' });
+
+                            if (string.IsNullOrEmpty(getScale))
+                                return "-0";
+
+                            return $"-{getScale}";
+                        }
+                        else
+                        {
+                            getScale = getScale.TrimStart(new char[] { '0' });
+
+                            if (string.IsNullOrEmpty(getScale))
+                                return "0";
+
+                            return $"{getScale}";
+                        }
+
+
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                return "0";
+            }
+            finally
+            {
+                udpServer.Close();
+            }
+        }
+
     }
     public enum ScalesInterface
     {
+        Udp,
+        Tcp,
+        Serial,
+        Wifi,
         Weighbridge,
         Scales,
         Zarbaf,
