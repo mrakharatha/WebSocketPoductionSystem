@@ -140,24 +140,42 @@ namespace WebSocketPoductionSystem.Page
                     }
                     else
                     {
+                        var serialPortName = balanceClass.data.port;
+                        
+                     var serialBaudRate=   int.Parse(balanceClass.data.transfer_rate);
+
                         //دریافت اطلاعات ترازو
                         if (balanceClass.data.port != null && balanceClass.data.transfer_rate != null && balanceClass.data.gateway != null)
                         {
+                            var scalesInterface = (ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol.ToString());
 
-                            if (scale.Connect(balanceClass.data.port, int.Parse(balanceClass.data.transfer_rate)))
+                            if (scalesInterface==ScalesInterface.Mahak)
                             {
 
-                                var result = scale.Received((ScalesInterface)Enum.Parse(typeof(ScalesInterface), balanceClass.data.protocol.ToString()));
-
+                                var result = MahakReceivedData.ReceivedData(serialPortName, serialBaudRate);
                                 session.Send(result);
                                 MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
                                 this.Invoke(inv);
-                                scale.DisConnect();
                             }
                             else
                             {
-                                session.Send("0");
+                                if (scale.Connect(serialPortName,serialBaudRate))
+                                {
+
+                                    var result = scale.Received(scalesInterface);
+
+                                    session.Send(result);
+                                    MethodInvoker inv = delegate { listScales.Items.Add($"وزن: {result}        {ConvertDate()} "); };
+                                    this.Invoke(inv);
+                                    scale.DisConnect();
+                                }
+                                else
+                                {
+                                    session.Send("0");
+                                }
                             }
+
+                            
                         }
                         else
                         {

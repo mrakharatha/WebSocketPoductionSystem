@@ -42,6 +42,14 @@
     <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="MahakScale, Version=2.6.17.23, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\MahakScale.dll</HintPath>
+    </Reference>
+    <Reference Include="NewDLL, Version=2.6.17.23, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\NewDLL.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.6.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -74,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClassWebSocket\BalanceClass.cs" />
+    <Compile Include="Class\MahakReceivedData.cs" />
     <Compile Include="Class\Porotocol.cs" />
     <Compile Include="Class\Scales.cs" />
     <Compile Include="Class\Weighbridge.cs" />

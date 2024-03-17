@@ -17,6 +17,7 @@ namespace WebSocketPoductionSystem.Class
     {
         public ScalesInterface ScalesInterface;
         public SerialPort SerialPort;
+
         //متصل به ترازو
         public bool Connect(string serialPortName, int serialBaudRate)
         {
@@ -207,7 +208,6 @@ namespace WebSocketPoductionSystem.Class
 
                 }
 
-
                 if (scalesInterface == ScalesInterface.Zarbaf)
                 {
 
@@ -283,6 +283,7 @@ namespace WebSocketPoductionSystem.Class
 
                     }
                 }
+
                 return "0";
 
             }
@@ -420,6 +421,7 @@ namespace WebSocketPoductionSystem.Class
         Weighbridge,
         Scales,
         Zarbaf,
+        Mahak,
         YazdTaraz
     }
 }
