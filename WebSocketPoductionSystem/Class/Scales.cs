@@ -71,34 +71,6 @@ namespace WebSocketPoductionSystem.Class
                 //از نوع ترازو
                 if (scalesInterface == ScalesInterface.Scales)
                 {
-                    //// خواندن اطلاعات
-                    //string data = SerialPort.ReadLine();
-
-
-                    ////منفی بودن مقدار ترازو
-                    //if (data.Contains("-"))
-                    //{
-                    //    //حذف دیتای اضافی
-                    //    string result = RemoveData(data);
-                    //    if (result.StartsWith("."))
-                    //    {
-                    //        return "-0" + result;
-                    //    }
-                    //    return "-" + result;
-                    //}
-                    //else
-                    //{
-                    //    //حذف دیتای اضافی
-                    //    string result = RemoveData(data);
-                    //    if (result.StartsWith("."))
-                    //    {
-                    //        return "0" + result;
-                    //    }
-                    //    return result;
-                    //}
-
-
-
                     while (true)
                     {
                         string[] stringSeparators = new string[] { "\r" };
@@ -139,40 +111,8 @@ namespace WebSocketPoductionSystem.Class
                                     return "-" + result;
                                 }
                             }
-
-
-                            //var result = line.Replace("p", "");
-                            //result = result.Replace("P", "");
-                            //result = result.Replace("@", "");
-                            //if (result.StartsWith("+"))
-                            //{
-                            //    result = result.Replace("+", "");
-                            //    result = result.TrimStart(new char[] { '0' });
-                            //    if (result.StartsWith("."))
-                            //        return "0" + result;
-
-                            //    return result;
-                            //}
-
-                            //if (result.StartsWith("-"))
-                            //{
-                            //    result = result.Replace("-", "");
-                            //    result = result.TrimStart(new char[] { '0' });
-                            //    if (result.StartsWith("."))
-                            //        return "0" + result;
-
-                            //    return "-" + result;
-                            //}
                         }
                     }
-
-
-
-
-
-
-
-
                 }
 
                 //ازنوع باسکول
@@ -284,6 +224,53 @@ namespace WebSocketPoductionSystem.Class
                     }
                 }
 
+
+                if(scalesInterface== ScalesInterface.A12E)
+                {
+                    while (true)
+                    {
+                        string[] stringSeparators = new string[] { "\r" };
+                        Thread.Sleep(100);
+                        string[] lines = SerialPort.ReadExisting().Split(stringSeparators, StringSplitOptions.None);
+
+                        var positiveState = "wn";
+                        var negativeState = "wn-";
+                        var end = "kg";
+
+                        foreach (var line in lines)
+                        {
+                            if (line.Trim().StartsWith(negativeState))
+                            {
+                                if (line.EndsWith(end))
+                                {
+
+                                    //حذف دیتای اضافی
+                                    string result = RemoveData(line);
+                                    if (result.StartsWith("."))
+                                    {
+                                        return "-0" + result;
+                                    }
+                                    return "-" + result;
+                                }
+                            }
+
+                            if (line.Trim().StartsWith(positiveState))
+                            {
+                                if (line.EndsWith(end))
+                                {
+                                    string result = RemoveData(line);
+                                    if (result.StartsWith("."))
+                                    {
+                                        return "0" + result;
+                                    }
+                                    return result;
+                                }
+                            }
+
+                           
+                        }
+                    }
+                }
                 return "0";
 
             }
@@ -422,6 +409,7 @@ namespace WebSocketPoductionSystem.Class
         Scales,
         Zarbaf,
         Mahak,
-        YazdTaraz
+        YazdTaraz,
+        A12E
     }
 }
