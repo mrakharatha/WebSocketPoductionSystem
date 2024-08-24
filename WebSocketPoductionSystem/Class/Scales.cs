@@ -223,13 +223,11 @@ namespace WebSocketPoductionSystem.Class
 
                     }
                 }
-
-
                 if(scalesInterface== ScalesInterface.A12E)
                 {
                     while (true)
                     {
-                        string[] stringSeparators = new string[] { "\r" };
+                        string[] stringSeparators = new string[] { "\r\n" };
                         Thread.Sleep(100);
                         string[] lines = SerialPort.ReadExisting().Split(stringSeparators, StringSplitOptions.None);
 
@@ -239,35 +237,29 @@ namespace WebSocketPoductionSystem.Class
 
                         foreach (var line in lines)
                         {
-                            if (line.Trim().StartsWith(negativeState))
+                            var read = line.Trim();
+                            if (read.StartsWith(negativeState)&& read.EndsWith(end))
                             {
-                                if (line.EndsWith(end))
-                                {
-
                                     //حذف دیتای اضافی
-                                    string result = RemoveData(line);
+                                    string result = RemoveData(read);
                                     if (result.StartsWith("."))
                                     {
                                         return "-0" + result;
                                     }
                                     return "-" + result;
-                                }
+                                
                             }
-
-                            if (line.Trim().StartsWith(positiveState))
+                            if (read.StartsWith(positiveState)&& read.EndsWith(end))
                             {
-                                if (line.EndsWith(end))
-                                {
-                                    string result = RemoveData(line);
+                                    string result = RemoveData(read);
                                     if (result.StartsWith("."))
                                     {
                                         return "0" + result;
                                     }
                                     return result;
-                                }
                             }
 
-                           
+
                         }
                     }
                 }
@@ -287,12 +279,14 @@ namespace WebSocketPoductionSystem.Class
             {
                 data = data.Replace('-', '0');
             }
-            string removeEqual = data.Replace('=', '0');
-            string removeW = removeEqual.Replace('w', '0');
-            string removeN = removeW.Replace('n', '0');
-            string removeZero = removeN.TrimStart(new char[] { '0' });
-            var send = removeZero.Split('k');
-            return send[0];
+            var removeData = data.Replace('=', '0').Trim();
+            removeData = removeData.Replace('w', '0').Trim();
+            removeData = removeData.Replace('n', '0').Trim();
+            removeData = removeData.Replace("\\n", "0").Trim();
+            removeData = removeData.Replace("kg", "").Trim();
+
+            removeData = removeData.TrimStart(new char[] { '0' });
+            return removeData;
         }
         public string TcpServerReceived(string ip, string port)
         {
