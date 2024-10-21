@@ -77,6 +77,7 @@ namespace WebSocketPoductionSystem.Page
             dynamic res = JsonConvert.DeserializeObject(value);
             string command = res.command.ToString();
             string protocol = res.data.protocol.ToString();
+            WriteLog.Write($"Received : {value}");
 
             ////حالت باسکول
             //if (protocol== "Weighbridge")
