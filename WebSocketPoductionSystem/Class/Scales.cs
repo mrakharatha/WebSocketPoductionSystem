@@ -228,8 +228,8 @@ namespace WebSocketPoductionSystem.Class
                     while (true)
                     {
                         string[] stringSeparators = new string[] { "\r\n" };
-                        Thread.Sleep(100);
                         string[] lines = SerialPort.ReadExisting().Split(stringSeparators, StringSplitOptions.None);
+                        Thread.Sleep(300);
 
                         var positiveState = "wn";
                         var negativeState = "wn-";
@@ -238,6 +238,7 @@ namespace WebSocketPoductionSystem.Class
                         foreach (var line in lines)
                         {
                             var read = line.Trim();
+                            WriteLog.Write(read);
                             if (read.StartsWith(negativeState)&& read.EndsWith(end))
                             {
                                     //حذف دیتای اضافی
@@ -284,6 +285,7 @@ namespace WebSocketPoductionSystem.Class
             removeData = removeData.Replace('n', '0').Trim();
             removeData = removeData.Replace("\\n", "0").Trim();
             removeData = removeData.Replace("kg", "").Trim();
+            removeData = removeData.Replace("k)", "").Trim();
 
             removeData = removeData.TrimStart(new char[] { '0' });
             return removeData;
