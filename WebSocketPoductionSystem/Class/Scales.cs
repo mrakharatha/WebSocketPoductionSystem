@@ -282,6 +282,10 @@ namespace WebSocketPoductionSystem.Class
             }
             var removeData = data.Replace('=', '0').Trim();
             removeData = removeData.Replace('w', '0').Trim();
+            removeData = removeData.Replace('k', '0').Trim();
+            removeData = removeData.Replace('g', '0').Trim();
+            removeData = removeData.Replace('(', '0').Trim();
+            removeData = removeData.Replace(')', '0').Trim();
             removeData = removeData.Replace('n', '0').Trim();
             removeData = removeData.Replace("\\n", "0").Trim();
             removeData = removeData.Replace("kg", "").Trim();
