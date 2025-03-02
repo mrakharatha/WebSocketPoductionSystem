@@ -237,30 +237,38 @@ namespace WebSocketPoductionSystem.Class
 
                         foreach (var line in lines)
                         {
-                            var read = line.Trim();
-                            WriteLog.Write(read);
-                            if (read.StartsWith(negativeState)&& read.EndsWith(end))
-                            {
-                                    //حذف دیتای اضافی
-                                    string result = RemoveData(read);
-                                    if (result.StartsWith("."))
-                                    {
-                                        return "-0" + result;
-                                    }
-                                    return "-" + result;
-                                
-                            }
-                            if (read.StartsWith(positiveState)&& read.EndsWith(end))
-                            {
-                                    string result = RemoveData(read);
-                                    if (result.StartsWith("."))
-                                    {
-                                        return "0" + result;
-                                    }
-                                    return result;
-                            }
+                            var res = line.Trim();
+                            WriteLog.Write(res);
+                            if (string.IsNullOrWhiteSpace(res))
+                                continue;
 
 
+                            if (res.StartsWith(positiveState) && res.EndsWith(end))
+                            {
+                                var result = res.Replace(positiveState, "").Replace(end, "").Trim();
+                                result = result.TrimStart(new char[] { '0' });
+
+
+                                if (result.StartsWith("."))
+                                    result = $"0{result}";
+
+                                DisConnect();
+                                return result;
+
+                            }
+                            if (res.StartsWith(negativeState) && res.EndsWith(end))
+                            {
+                                var result = res.Replace(negativeState, "").Replace(end, "").Trim();
+
+                                result = result.TrimStart(new char[] { '0' });
+
+                                if (result.StartsWith("."))
+                                    result = $"0{result}";
+
+                                DisConnect();
+                                return "-" + result;
+
+                            }
                         }
                     }
                 }
@@ -293,6 +301,7 @@ namespace WebSocketPoductionSystem.Class
 
             removeData = removeData.TrimStart(new char[] { '0' });
             return removeData;
+
         }
         public string TcpServerReceived(string ip, string port)
         {
